@@ -128,7 +128,7 @@ export default class ServerlessRecapDevPlugin {
         const runtime = func.runtime || this.sls.service.provider.runtime
         const { disable } = func['recap-dev'] || {}
         const handler = isString(func.handler) ? func.handler.split('.') : []
-        const relativePath = handler.slice(0, -1).join('.');
+        const relativePath = handler.slice(0, -1).join('.')
 
         if (disable) {
           this.log(`recap.dev is disabled for function ${key}, skipping.`)
