@@ -1,4 +1,5 @@
 import fs from 'fs-extra'
+import glob from 'glob-promise'
 import { join } from 'path'
 import { promisify } from 'util'
 import { uniq, isString, isObject, last } from 'lodash-es'
@@ -11,7 +12,7 @@ import {
 const mkdir = fs.mkdirpSync
 const writeFile = promisify(fs.writeFile)
 
-const VALIDATE_LIB_BY_LANG = {
+const VALIDATE_LIB_BY_LANG: any = {
   async node() {
     let pack
     try {
@@ -26,6 +27,8 @@ const VALIDATE_LIB_BY_LANG = {
     }
   },
 }
+
+VALIDATE_LIB_BY_LANG.tsnode = VALIDATE_LIB_BY_LANG.node
 
 export default class ServerlessRecapDevPlugin {
   private sls: any
@@ -90,9 +93,25 @@ export default class ServerlessRecapDevPlugin {
     this.log('Wrapping your functions with recap.dev...')
     fs.removeSync(join(this.originalServicePath, this.config().handlersDirName))
     this.funcs = this.findFuncs()
+    await this.detectTsHandlers()
     await this.validateLib()
     await this.generateHandlers()
     this.assignHandlers()
+  }
+
+  async detectTsHandlers() {
+    await Promise.all(this.funcs.map(async (func) => {
+      const handler = isString(func.handler) ? func.handler.split('.') : []
+      const relativePath = handler.slice(0, -1).join('.')
+      const matchingFiles = glob.sync(`${relativePath}.*`)
+      if (
+        matchingFiles.length > 0
+        && (matchingFiles[0].endsWith('.ts')
+          || matchingFiles[0].endsWith('.tsx'))
+      ) {
+        func.language = 'tsnode'
+      }
+    }))
   }
 
   async validateLib() {
@@ -109,7 +128,7 @@ export default class ServerlessRecapDevPlugin {
         const runtime = func.runtime || this.sls.service.provider.runtime
         const { disable } = func['recap-dev'] || {}
         const handler = isString(func.handler) ? func.handler.split('.') : []
-        const relativePath = handler.slice(0, -1).join('.')
+        const relativePath = handler.slice(0, -1).join('.');
 
         if (disable) {
           this.log(`recap.dev is disabled for function ${key}, skipping.`)
