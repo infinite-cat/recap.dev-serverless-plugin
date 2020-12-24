@@ -1,8 +1,9 @@
 {
   "name": "@recap.dev/serverless-plugin",
   "version": "1.0.0",
-  "description": "",
-  "keywords": [],
+  "description": "Serverless Framework tracing plugin for recap.dev, an open-source cloud observability and tracing solution for modern JavaScript backends.",
+  "keywords": ["tracing", "monitoring", "server monitoring", "observability", "dashboard"],
+  "homepage": "https://recap.dev",
   "main": "dist/index.umd.js",
   "module": "dist/index.es5.js",
   "typings": "dist/types/index.d.ts",
